@@ -29,7 +29,7 @@ function wardrobeReducer(state, action) {
   }
 }
 
-const BASE_URL = "http://localhost:5000"; // UPDATE BEFORE DEPLOYMENT
+const BASE_URL = "https://wardrobewhiz.onrender.com"; // UPDATED FOR RENDER DEPLOYMENT
 
 export function WardrobeProvider({ children }) {
   const [state, dispatch] = useReducer(wardrobeReducer, initialState);

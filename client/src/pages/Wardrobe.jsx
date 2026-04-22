@@ -28,7 +28,7 @@ export default function Wardrobe() {
     try {
       const imageBlob = URL.createObjectURL(file);
       
-      const res = await fetch("http://localhost:5000/api/upload", {
+      const res = await fetch("https://wardrobewhiz.onrender.com/api/upload", {
         method: "POST",
         body: formData
       });

@@ -14,25 +14,39 @@ const serviceAccountPath = path.resolve(__dirname, '../serviceAccountKey.json');
 
 let db;
 
-// Check if credentials exist to avoid crashing
-if (fs.existsSync(serviceAccountPath)) {
+// Check if credentials exist as an environment variable (for Render/Deployment)
+// Or as a physical file (for Local Development)
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    db = admin.firestore();
+    console.log("🔥 Firebase Firestore Initialized via Environment Variable");
+  } catch (error) {
+    console.error("❌ Failed to parse FIREBASE_SERVICE_ACCOUNT env var:", error);
+  }
+} else if (fs.existsSync(serviceAccountPath)) {
   const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-  
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
   });
-  
   db = admin.firestore();
-  console.log("🔥 Firebase Firestore Initialized Successfully");
+  console.log("🔥 Firebase Firestore Initialized via Local JSON file");
 } else {
-  console.log("⚠️ WARNING: /server/serviceAccountKey.json not found.");
-  console.log("Firebase is skipping initialization. Please drop your key in the server folder!");
-  
-  // Create a mock DB object so the app doesn't crash while building out other endpoints
+  console.log("⚠️ WARNING: No Firebase credentials found (env var or local file).");
   db = {
     collection: () => ({
       get: async () => ({ docs: [] }),
-      add: async () => ({ id: 'mock_id' })
+      add: async () => ({ id: 'mock_id' }),
+      doc: () => ({ 
+        collection: () => ({ 
+          get: async () => ({ docs: [] }),
+          add: async () => ({ id: 'mock_id' }),
+          doc: () => ({ delete: async () => ({}) })
+        })
+      })
     })
   };
 }

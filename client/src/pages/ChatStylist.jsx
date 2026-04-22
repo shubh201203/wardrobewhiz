@@ -25,7 +25,7 @@ export default function ChatStylist() {
 
     try {
       // Pinging the Node.js backend which proxies to OpenAI
-      const res = await fetch("http://localhost:5000/api/chat", {
+      const res = await fetch("https://wardrobewhiz.onrender.com/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
