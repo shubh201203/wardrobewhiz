@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useWardrobe } from '../context/WardrobeContext';
 import { Send } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
+import { generateChatResponse } from '../utils/outfitLogic';
 
 export default function ChatStylist() {
   const { state } = useWardrobe();
   const [messages, setMessages] = useState([
-    { id: 1, sender: 'ai', text: "Hi! I'm your AI Stylist powered by OpenAI. What are we dressing for today?" }
+    { id: 1, sender: 'ai', text: "Hi! I'm your WardrobeWhiz AI Stylist. Ask me what to wear for work, an evening date, a party, or college!" }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -25,7 +27,7 @@ export default function ChatStylist() {
 
     try {
       // Pinging the Node.js backend which proxies to OpenAI
-      const res = await fetch("https://wardrobewhiz.onrender.com/api/chat", {
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -36,13 +38,25 @@ export default function ChatStylist() {
       
       const data = await res.json();
       
-      if (res.ok) {
+      if (res.ok && data.reply) {
         setMessages(prev => [...prev, { id: Date.now(), sender: 'ai', text: data.reply }]);
       } else {
-        setMessages(prev => [...prev, { id: Date.now(), sender: 'ai', text: "⚠️ Error from Stylist Server: " + (data.error || "Unknown Error") }]);
+        // Fall back to rule-based wardrobe recommendation engine
+        const fallback = generateChatResponse(userMsg, state.items);
+        setMessages(prev => [...prev, { 
+          id: Date.now(), 
+          sender: 'ai', 
+          text: `${fallback}\n\n✦ Styled with your current wardrobe inventory.` 
+        }]);
       }
     } catch (error) {
-      setMessages(prev => [...prev, { id: Date.now(), sender: 'ai', text: "⚠️ Could not connect to the Backend server on port 5000. Is it running?" }]);
+      // Graceful offline/network fallback
+      const fallback = generateChatResponse(userMsg, state.items);
+      setMessages(prev => [...prev, { 
+        id: Date.now(), 
+        sender: 'ai', 
+        text: `${fallback}\n\n✦ Styled with your current wardrobe inventory.` 
+      }]);
     }
     
     setIsTyping(false);

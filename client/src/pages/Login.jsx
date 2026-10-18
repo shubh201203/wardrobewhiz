@@ -64,8 +64,15 @@ export default function Login() {
             style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', fontFamily: 'var(--font-primary)' }}
           />
         </div>
-        <button className="btn btn-primary btn-full mb-4" onClick={() => login(username)}>
+        <button className="btn btn-primary btn-full mb-2" onClick={() => login(username)}>
           {isSignUp ? 'Sign Up' : 'Sign In'}
+        </button>
+        <button 
+          className="btn btn-secondary btn-full mb-4" 
+          onClick={() => login('Guest Evaluator', true)}
+          style={{ borderColor: 'var(--accent)', color: 'var(--text)' }}
+        >
+          ✦ 1-Click Demo Access
         </button>
         <p className="text-center text-light" style={{ fontSize: '0.85rem' }}>
           {isSignUp ? 'Already have an account?' : "Don't have an account?"} <button className="text-accent" style={{ background: 'none', border: 'none', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => setIsSignUp(!isSignUp)}>{isSignUp ? 'Sign In' : 'Sign Up'}</button>

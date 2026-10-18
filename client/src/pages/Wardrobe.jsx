@@ -4,6 +4,7 @@ import EmptyState from '../components/EmptyState';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Plus, UploadCloud, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../config/api';
 
 export default function Wardrobe() {
   const { state, addItemToDb, deleteItemFromDb } = useWardrobe();
@@ -28,7 +29,7 @@ export default function Wardrobe() {
     try {
       const imageBlob = URL.createObjectURL(file);
       
-      const res = await fetch("https://wardrobewhiz.onrender.com/api/upload", {
+      const res = await fetch(`${API_BASE_URL}/api/upload`, {
         method: "POST",
         body: formData
       });

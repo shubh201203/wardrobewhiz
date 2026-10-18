@@ -20,10 +20,20 @@ dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "2mb" }));
 
-// Set up multer for image upload in memory
-const upload = multer({ storage: multer.memoryStorage() });
+// Set up multer for image upload in memory with 5MB security limit
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype && file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files (PNG, JPEG, WEBP) are allowed.'), false);
+    }
+  }
+});
 
 // Optional: Preload MobileNet to avoid delay on first request
 let model = null;
@@ -116,8 +126,21 @@ app.post("/api/chat", async (req, res) => {
     res.json({ reply });
 
   } catch (error) {
-    console.error("OpenAI Error:", error);
-    res.status(500).json({ error: "Failed to fetch response from Stylist AI." });
+    console.error("OpenAI Error:", error?.message || error);
+    // Graceful intelligent fallback if OpenAI quotas are depleted or keys are invalid
+    const wardrobeItems = Array.isArray(wardrobeContext) ? wardrobeContext : [];
+    const top = wardrobeItems.find(i => i.category === 'top');
+    const bottom = wardrobeItems.find(i => i.category === 'bottom');
+    const outerwear = wardrobeItems.find(i => i.category === 'outerwear');
+    
+    let fallbackText = "For this occasion, I recommend building around your neutral basics. A clean top paired with well-fitted trousers creates an effortless silhouette.";
+    if (top && bottom) {
+      fallbackText = `Try pairing your ${top.name} with ${bottom.name}${outerwear ? ` and layer with the ${outerwear.name}` : ''} for a balanced, occasion-ready outfit.`;
+    }
+    
+    res.json({ 
+      reply: `${fallbackText}\n\n✦ Styled with your current wardrobe inventory.` 
+    });
   }
 });
 

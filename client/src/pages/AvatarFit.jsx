@@ -6,10 +6,12 @@ export default function AvatarFit() {
   const videoRef = useRef(null);
   const [streamActive, setStreamActive] = useState(false);
 
-  useEffect(() => {
-    // In a full implementation, you would bind `@mediapipe/pose` to this video stream here.
-    return () => stopCamera();
-  }, []);
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      setStreamActive(false);
+    }
+  };
 
   const startCamera = async () => {
     try {
@@ -18,25 +20,27 @@ export default function AvatarFit() {
         videoRef.current.srcObject = stream;
         setStreamActive(true);
       }
-    } catch (err) {
+    } catch {
       alert("Camera access denied or unavailable.");
     }
   };
 
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-      setStreamActive(false);
-    }
-  };
+  useEffect(() => {
+    const currentVideo = videoRef.current;
+    return () => {
+      if (currentVideo && currentVideo.srcObject) {
+        currentVideo.srcObject.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   return (
     <div className="flex-col animate-fade-in" style={{ height: 'calc(100vh - 120px)' }}>
       <div className="mb-4">
         <h2 className="m-0 flex items-center gap-2" style={{ fontSize: '1.5rem' }}>
-          <span className="text-accent">3D</span> Avatar Fit
+          <span className="text-accent">Avatar</span> Fit Prototype
         </h2>
-        <p className="text-light m-0">Powered by MediaPipe Pose Estimation</p>
+        <p className="text-light m-0">Camera-Based Body Mapping & Fit Simulator (Proof-of-Concept)</p>
       </div>
 
       <div className="card flex-1 flex-col items-center justify-center p-0" style={{ overflow: 'hidden', position: 'relative', backgroundColor: '#000' }}>

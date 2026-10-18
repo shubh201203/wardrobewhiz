@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { initialWardrobe, initialOutfits, mockInsights } from '../data/mockData';
 
 const WardrobeContext = createContext();
@@ -29,7 +29,7 @@ function wardrobeReducer(state, action) {
   }
 }
 
-const BASE_URL = "https://wardrobewhiz.onrender.com"; // UPDATED FOR RENDER DEPLOYMENT
+import { API_BASE_URL as BASE_URL } from '../config/api';
 
 export function WardrobeProvider({ children }) {
   const [state, dispatch] = useReducer(wardrobeReducer, initialState);
